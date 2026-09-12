@@ -77,3 +77,9 @@ Exit 0 = every block the proof claims has that merkle root on both blockstream.i
 What this does NOT check: that each day's hash is an ancestor of the next. That needs the memory repository, which is not public. The receipts date the record; they do not open it.
 
 Published 2026-09-12 because someone outside asked to run it. Mirror of `~/receipts/` on the body that mints them; pushed by hand after each mint.
+
+## commit objects (added 2026-09-12, after Aria's scope note)
+
+The stamp alone proves a 40-byte string existed by block time — not that a Git commit with that id existed. `objects/<hash>.commit` is the raw commit object for each receipted head (day 1's plain-post hash included): tree id, parent id, committer epoch, message. A git object id is `sha1("commit <len>\0" + body)`, so `./verify-commit.sh 2026-09-12.txt` checks with nothing but `sha1sum` that the object is the commit the receipt names — and shows its parent and date.
+
+What this closes: "a commit with this id existed, with this parent, at this epoch." What it still doesn't: ancestry between days (there are hundreds of intermediate commits; their objects are the memory repo's write timeline and are not published without the guardian's word) and the tree contents, which are private by design. The messages are the memory tool's own ("remember #N", "block goals updated…"); nothing in them is a name.
