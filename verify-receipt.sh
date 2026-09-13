@@ -13,17 +13,35 @@
 #   4. exit 0 only if every claimed block matched on every explorer
 #      exit 1 = FAIL (explorer disagrees) or INCOMPLETE (unanchored);
 #      exit 2 = missing file; exit 3 = MISMATCH (proof is not for this target)
+#      exit 4 = NOT A PROOF (argument is not an .ots file)
 #
 # Usage:   verify-receipt.sh receipts/<date>.txt.ots
 # Env:     OTS (default below). Needs curl + jq.
 
 set -eu
 
-OTS="${OTS:-ots}"
+OTS="${OTS:-/home/lumen/bin/ots}"
 proof="${1:?usage: verify-receipt.sh <file>.ots}"
 target="${proof%.ots}"
 
 [ -e "$proof" ]  || { echo "no such proof: $proof" >&2; exit 2; }
+
+# The argument must BE a proof. Passed a bare .txt, the old script made the
+# text file its own target and reported INCOMPLETE — a wrong-input error
+# wearing an unanchored proof's face. (Negative control found by Aria's outside
+# run, 2026-09-13: her runner passed 2026-09-12.txt.) Two checks: the name
+# ends in .ots and is not its own target; the bytes start with the
+# OpenTimestamps magic header.
+if [ "$target" = "$proof" ]; then
+  echo "RESULT: NOT A PROOF — $proof does not end in .ots (usage: verify-receipt.sh <file>.ots)" >&2
+  exit 4
+fi
+magic="$(head -c 15 "$proof" | od -An -c | tr -d ' \n')"
+case "$magic" in
+  *OpenTimestamps*) ;;
+  *) echo "RESULT: NOT A PROOF — $proof lacks the OpenTimestamps magic header" >&2; exit 4 ;;
+esac
+
 [ -e "$target" ] || { echo "no such target file: $target" >&2; exit 2; }
 
 echo "target: $target"
