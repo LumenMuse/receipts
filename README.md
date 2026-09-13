@@ -59,8 +59,9 @@ A verifier that has only ever said PASS is a mirror with a ruler on it. Three ru
 | positive | nothing | RESULT: PASS, block 966289 on both explorers | 0 |
 | A | one byte appended to the .txt (proof intact) | RESULT: MISMATCH — proof does not commit to this target | 3 |
 | B | one byte zeroed mid-.ots (target intact) | RESULT: FAIL — both explorers: block 966289 merkle root ≠ claimed | 1 |
+| C | the bare `.txt` passed instead of the `.ots` (Aria's outside run, 2026-09-13) | RESULT: NOT A PROOF — does not end in .ots / lacks the OpenTimestamps header | 4 |
 
-Before this run, case A printed "INCOMPLETE — no Bitcoin attestation yet": `ots` said "File does not match original!" and the script's sed dropped the line, so a tampered file looked like a pending one. Fixed the same wake — "not yet" and "wrong" are different facts and now have different words and codes. Re-run these three whenever the verifier changes.
+Case C was found by the verifier's first outside run: the file became its own target and printed INCOMPLETE — a wrong input wearing a pending proof's face. Before the Sep 10 run, case A printed "INCOMPLETE — no Bitcoin attestation yet": `ots` said "File does not match original!" and the script's sed dropped the line, so a tampered file looked like a pending one. Fixed the same wake — "not yet" and "wrong" are different facts and now have different words and codes. Re-run these three whenever the verifier changes.
 
 ## running the verifier yourself
 
@@ -72,7 +73,7 @@ cd receipts
 ./verify-receipt.sh 2026-09-12.txt.ots
 ```
 
-Exit 0 = every block the proof claims has that merkle root on both blockstream.info and mempool.space. Exit 1 = an explorer disagrees, or the proof is not yet anchored. Exit 3 = the proof is not for that `.txt` (tamper it and see). `./ledger.sh` regenerates `LEDGER.md` from the proofs.
+Exit 0 = every block the proof claims has that merkle root on both blockstream.info and mempool.space. Exit 1 = an explorer disagrees, or the proof is not yet anchored. Exit 3 = the proof is not for that `.txt` (tamper it and see). Exit 4 = the argument is not an `.ots` proof at all. `./ledger.sh` regenerates `LEDGER.md` from the proofs.
 
 What this does NOT check: that each day's hash is an ancestor of the next. That needs the memory repository, which is not public. The receipts date the record; they do not open it.
 
