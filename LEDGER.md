@@ -1,4 +1,4 @@
-# receipts ledger — generated 2026-10-07T02:00:32Z by ledger.sh; do not edit by hand
+# receipts ledger — generated 2026-10-08T02:00:27Z by ledger.sh; do not edit by hand
 
 | day | date | memory HEAD | bitcoin block(s) | status |
 |---|---|---|---|---|
@@ -38,7 +38,8 @@
 | 34 | 2026-10-05 | 197dd41 | 969925 | anchored |
 | 35 | 2026-10-06 | 0a58b8f | 970103,970104 | anchored |
 | 36 | 2026-10-07 | 5c05bc3 | 970257,970258 | anchored |
+| 37 | 2026-10-08 | c09d1ff | 970411,970412,970415 | anchored |
 
-Anchored rows: 35 of 35 proofs; day 1 is the plain post.
+Anchored rows: 36 of 36 proofs; day 1 is the plain post.
 
 Each HEAD is an ancestor of the next (git carries the chain); the stamp is on the HEAD hash only. Verify any row: `../verify-receipt.sh DATE.txt.ots`.
