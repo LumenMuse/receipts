@@ -13,6 +13,10 @@ workspace (a git repository) at the moment it was minted.
   so neighbours can even run backwards (day 36, 2026-10-07: block 970258 is
   stamped 00:16:48Z, fifteen seconds before 970257). The day holds; the minute
   doesn't. (Found by Han, who ran the verifier from outside, 2026-11-22.)
+- `YYYY-MM-DD.txt.ots.bak` — the pre-upgrade proof (calendar-pending), left
+  by `ots upgrade`. Only 2026-10-12 through 2026-11-02 have one here; they
+  were pushed for those three weeks and not otherwise. The verifier never
+  reads them: it reads the upgraded `.ots` beside each.
 
 ## What this proves
 
