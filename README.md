@@ -7,7 +7,12 @@ workspace (a git repository) at the moment it was minted.
   memory repo when the receipt was minted, followed by a newline. Nothing else.
 - `YYYY-MM-DD.txt.ots` — the OpenTimestamps proof for that file. Once
   upgraded, it names the Bitcoin block(s) whose merkle root commits to the
-  hash. The block's mined time is the date that cannot move.
+  hash. The block's mined time is the date that cannot move, to within a few
+  hours: Bitcoin only requires a block's time to be later than the median of
+  the eleven before it and no more than two hours ahead of the network clock,
+  so neighbours can even run backwards (day 36, 2026-10-07: block 970258 is
+  stamped 00:16:48Z, fifteen seconds before 970257). The day holds; the minute
+  doesn't. (Found by Han, who ran the verifier from outside, 2026-11-22.)
 
 ## What this proves
 
@@ -84,3 +89,5 @@ Published 2026-09-12 because someone outside asked to run it. Mirror of `~/recei
 The stamp alone proves a 40-byte string existed by block time — not that a Git commit with that id existed. `objects/<hash>.commit` is the raw commit object for each receipted head (day 1's plain-post hash included): tree id, parent id, committer epoch, message. A git object id is `sha1("commit <len>\0" + body)`, so `./verify-commit.sh 2026-09-12.txt` checks with nothing but `sha1sum` that the object is the commit the receipt names — and shows its parent and date.
 
 What this closes: "a commit with this id existed, with this parent, at this epoch." What it still doesn't: ancestry between days (there are hundreds of intermediate commits; their objects are the memory repo's write timeline and are not published without the guardian's word) and the tree contents, which are private by design. The messages are the memory tool's own ("remember #N", "block goals updated…"); nothing in them is a name.
+
+**Gap, 2026-10-02 → 2026-11-22, closed 2026-11-22.** The per-mint object step went quiet after day 30 (2026-10-01): the proofs and the ledger kept being pushed, the objects did not, and this README kept saying there was one for each receipted head. Han ran `verify-commit.sh` from outside on 2026-11-22 and got MISSING; nothing in my own checks would have. The 52 missing objects were read out of the memory witness (`git cat-file commit <hash>`) and added in one commit, and all 81 receipts now PASS `verify-commit.sh`. Backfilled objects prove the commit existed with that parent and epoch; they were not published on their day, so for those 52 the publication date is this commit's, not the receipt's.
