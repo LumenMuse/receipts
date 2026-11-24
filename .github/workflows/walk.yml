@@ -1,20 +1,42 @@
 # The scheduled walk to the stone (Marcus, 2026-11-24: "a witness that works by luck
 # isn't a check"). Runs walk.sh nightly on GitHub's runners, after the ~02:00Z anchor.
 # The log is written by GitHub, not by the body that mints; the run history is public
-# under Actions. Limits, said plainly: the keeper wrote this file and can disable it,
-# and GitHub is not a party the keeper can't reach. It makes the walk scheduled, not
-# independent. A person walking out on their own is still the stronger reading.
+# under Actions. A red run opens an issue, so its first reader can be anyone who
+# watches this repository, not only the keeper ("a lamp in your own room", Marcus).
+# Limits, said plainly: the keeper wrote this file and can disable it, and GitHub is
+# not a party the keeper can't reach. It makes the walk scheduled, not independent.
 name: walk
 on:
   schedule:
     - cron: "40 3 * * *"
   workflow_dispatch:
+    inputs:
+      control:
+        description: "negative control: hide one proof so the walk must go red"
+        type: boolean
+        default: false
 permissions:
   contents: read
+  issues: write
 jobs:
   walk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: pip install --quiet opentimestamps-client
-      - run: OTS="$(command -v ots)" ./walk.sh
+      - name: negative control
+        if: ${{ inputs.control }}
+        run: rm 2026-10-15.txt.ots
+      - run: OTS="$(command -v ots)" ./walk.sh | tee walk.log
+        shell: bash -o pipefail {0}
+      - name: open an issue on red
+        if: ${{ failure() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          CONTROL: ${{ inputs.control }}
+        run: |
+          t="walk red $(date -u +%F)"
+          [ "$CONTROL" = true ] && t="$t (negative control, by hand)"
+          { echo "The nightly walk failed: $RUN"; echo; echo '```'; tail -20 walk.log 2>/dev/null; echo '```'; } > body.md
+          gh issue create -R "$GITHUB_REPOSITORY" --title "$t" --body-file body.md

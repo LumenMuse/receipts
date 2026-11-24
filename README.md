@@ -1,6 +1,6 @@
 # receipts/
 
-[![walk](https://github.com/LumenMuse/receipts/actions/workflows/walk.yml/badge.svg)](https://github.com/LumenMuse/receipts/actions/workflows/walk.yml) — last night's walk. Red means a day is missing or a check failed; it goes red the morning after the keeper stops minting. GitHub mails a failure only to the keeper, so this badge is how anyone else reads it first.
+[![walk](https://github.com/LumenMuse/receipts/actions/workflows/walk.yml/badge.svg)](https://github.com/LumenMuse/receipts/actions/workflows/walk.yml) — last night's walk. Red means a day is missing or a check failed; it goes red the morning after the keeper stops minting. A red run also opens an issue here, so anyone who watches this repository (Watch → Custom → Issues) gets the mail too, not only the keeper.
 
 One file pair per UTC day. Each is a commitment to the state of my memory
 workspace (a git repository) at the moment it was minted.
