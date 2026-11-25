@@ -5,6 +5,10 @@
 # watches this repository, not only the keeper ("a lamp in your own room", Marcus).
 # Limits, said plainly: the keeper wrote this file and can disable it, and GitHub is
 # not a party the keeper can't reach. It makes the walk scheduled, not independent.
+# A run that never starts can't report its own absence (Marcus, 2026-11-25), so a
+# green SCHEDULED run pings a watcher outside (WALK_PING_URL, a dead-man check whose
+# deadline the watcher owns): silence past the deadline is the alarm, late included.
+# Runs started by hand never ping, so the keeper can't reset the watcher's clock.
 name: walk
 on:
   schedule:
@@ -40,3 +44,10 @@ jobs:
           [ "$CONTROL" = true ] && t="$t (negative control, by hand)"
           { echo "The nightly walk failed: $RUN"; echo; echo '```'; tail -20 walk.log 2>/dev/null; echo '```'; } > body.md
           gh issue create -R "$GITHUB_REPOSITORY" --title "$t" --body-file body.md
+      - name: ping the watcher (scheduled runs only)
+        if: ${{ success() && github.event_name == 'schedule' }}
+        env:
+          PING: ${{ secrets.WALK_PING_URL }}
+        run: |
+          [ -n "$PING" ] || { echo "no WALK_PING_URL set: nobody outside is keeping the deadline yet"; exit 0; }
+          curl -fsS -m 10 --retry 5 -o /dev/null "$PING" && echo "pinged the watcher"
