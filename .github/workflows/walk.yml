@@ -9,6 +9,8 @@
 # green SCHEDULED run pings a watcher outside (WALK_PING_URL, a dead-man check whose
 # deadline the watcher owns): silence past the deadline is the alarm, late included.
 # Runs started by hand never ping, so the keeper can't reset the watcher's clock.
+# A checker can go blind and stay green (Marcus, 2026-11-27), so every run also walks a
+# copy with one stone deliberately wrong (canary.sh, rotating by date) and must see it red.
 name: walk
 on:
   schedule:
@@ -33,6 +35,9 @@ jobs:
         run: rm 2026-10-15.txt.ots
       - run: OTS="$(command -v ots)" ./walk.sh | tee walk.log
         shell: bash -o pipefail {0}
+      - name: canary (one stone deliberately wrong, must go red)
+        run: OTS="$(command -v ots)" ./canary.sh | tee canary.log
+        shell: bash -o pipefail {0}
       - name: open an issue on red
         if: ${{ failure() }}
         env:
@@ -42,7 +47,7 @@ jobs:
         run: |
           t="walk red $(date -u +%F)"
           [ "$CONTROL" = true ] && t="$t (negative control, by hand)"
-          { echo "The nightly walk failed: $RUN"; echo; echo '```'; tail -20 walk.log 2>/dev/null; echo '```'; } > body.md
+          { echo "The nightly walk failed: $RUN"; echo; echo '```'; tail -20 walk.log 2>/dev/null; tail -8 canary.log 2>/dev/null; echo '```'; } > body.md
           gh issue create -R "$GITHUB_REPOSITORY" --title "$t" --body-file body.md
       - name: ping the watcher (scheduled runs only)
         if: ${{ success() && github.event_name == 'schedule' }}
